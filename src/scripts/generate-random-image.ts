@@ -3,12 +3,12 @@ import path from 'path';
 
 import { createCanvas, loadImage } from 'canvas';
 import Frame from 'canvas-to-buffer';
+import { CIP25 } from 'types/cardano';
 import { AsyncResult, AsyncSuccess } from 'types/standard';
 import { selectByRarity } from 'utils/crypto';
 import * as pathUtils from 'utils/path';
 
 const inputPath = path.resolve('/temp/input');
-const outputPath = path.resolve('/temp/output.png');
 
 type Attribute = {
   readonly rarity: number;
@@ -31,7 +31,12 @@ async function scanLayer(
   directory: string
 ): Promise<AsyncResult<Layer, ScanLayerError>> {
   try {
-    const attributeTypeName = path.basename(directory);
+    // parse layer name
+    const dirName = path.basename(directory);
+    const digits = pathUtils.leadingDigits(dirName);
+    const attributeTypeName = dirName.substring(digits ? digits.length + 1 : 0);
+
+    // scan attribute names
     const files = await fsp.readdir(directory, { withFileTypes: true });
     const images = files.filter(
       (file) =>
@@ -129,20 +134,49 @@ export async function mergeImages(images: readonly string[], output: string) {
 }
 
 export async function generateRandomImage(
-  layers: readonly Layer[]
+  layers: readonly Layer[],
+  policyId: string,
+  output: {
+    readonly name: string;
+    readonly image: string;
+    readonly meta: string;
+  }
 ): Promise<boolean> {
-  const images = layers.map((layer) => {
+  const attributes = layers.map((layer) => {
     const randomIndex = selectByRarity(layer.attributes, Math.random());
-    return layer.attributes[randomIndex].imagePath;
+    return layer.attributes[randomIndex];
   });
+  const meta: CIP25 = {
+    721: {
+      [policyId]: {
+        name: output.name,
+        image: output.image,
+        mediaType: 'image/png',
+        ...Object.fromEntries(
+          attributes.map((attr, index) => [
+            layers[index].attributeTypeName,
+            attr.name,
+          ])
+        ),
+      },
+    },
+  };
 
-  await mergeImages(images, outputPath);
+  await mergeImages(
+    attributes.map((item) => item.imagePath),
+    output.image
+  );
+  await fsp.writeFile(output.meta, JSON.stringify(meta, null, 2));
   return true;
 }
 
 scan(inputPath).then((result) => {
   if (result._tag === 'Success') {
-    return generateRandomImage(result.result);
+    return generateRandomImage(result.result, 'policyId', {
+      image: path.resolve('/temp/output.png'),
+      meta: path.resolve('/temp/output.json'),
+      name: '001',
+    });
   }
 
   return null;

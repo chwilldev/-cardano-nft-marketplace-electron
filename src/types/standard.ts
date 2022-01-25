@@ -7,4 +7,5 @@ export type AsyncError<E> = {
   readonly _tag: 'Error';
   readonly error: E;
 };
+
 export type AsyncResult<T, E> = AsyncSuccess<T> | AsyncError<E>;
