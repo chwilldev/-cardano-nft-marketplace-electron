@@ -27,6 +27,8 @@ export default class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
+require('@electron/remote/main').initialize();
+
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
@@ -77,7 +79,8 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: true,
+      contextIsolation: false,
     },
   });
 
@@ -106,6 +109,8 @@ const createWindow = async () => {
     event.preventDefault();
     shell.openExternal(url);
   });
+
+  require('@electron/remote/main').enable(mainWindow.webContents);
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
