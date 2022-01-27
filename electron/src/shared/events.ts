@@ -5,6 +5,10 @@ function createREvent<EventData>(channel: string) {
     handler: (event: IpcRendererEvent, data: EventData) => void
   ) => {
     ipcRenderer.on(channel, handler);
+
+    return () => {
+      ipcRenderer.off(channel, handler);
+    };
   };
 
   const reply = (mainEvent: IpcMainEvent, data: EventData) => {
