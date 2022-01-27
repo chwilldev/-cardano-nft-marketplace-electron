@@ -1,6 +1,7 @@
 import { promises as fsp } from 'fs';
 import path from 'path';
-
+import _ from 'lodash';
+import BPromise from 'bluebird';
 import { createCanvas, loadImage } from 'canvas';
 import Frame from 'canvas-to-buffer';
 
@@ -8,8 +9,7 @@ import { CIP25 } from '../types/cardano';
 import { AsyncResult, AsyncSuccess } from '../types/standard';
 import { selectByRarity } from '../utils/crypto';
 import * as pathUtils from '../utils/path';
-
-const inputPath = path.resolve('/temp/input');
+import * as processUtils from '../utils/process';
 
 export type Attribute = {
   readonly rarity: number;
@@ -171,12 +171,35 @@ export async function generateRandomImage(
   return true;
 }
 
-scan(inputPath).then((result) => {
-  if (result._tag === 'Success') {
-    return generateRandomImage(result.result, 'policyId', {
-      image: path.resolve('/temp/output.png'),
-      meta: path.resolve('/temp/output.json'),
-      name: '001',
+export type InputData = {
+  readonly images: string;
+  readonly policyId: string;
+  readonly output: {
+    readonly image: string;
+    readonly meta: string;
+  };
+  readonly numberOfImages: string;
+};
+
+processUtils.getInputData<InputData>().then(async (res) => {
+  if (res._tag !== 'Success') {
+    console.error('Error ocurred while reading input', res.error);
+    return process.exit(1);
+  }
+
+  const input = res.result;
+  const scanRes = await scan(res.result.images);
+
+  if (scanRes._tag === 'Success') {
+    await BPromise.each(_.range(Number(input.numberOfImages)), (index) => {
+      const failed = generateRandomImage(scanRes.result, input.policyId, {
+        image: path.resolve(input.output.image),
+        meta: path.resolve(input.output.meta),
+        name: String(index).padStart(4, '0'),
+      });
+      if (!failed) {
+        console.error('Failed to generate image');
+      }
     });
   }
 
