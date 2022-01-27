@@ -175,10 +175,10 @@ export type InputData = {
   readonly images: string;
   readonly policyId: string;
   readonly output: {
-    readonly image: string;
+    readonly images: string;
     readonly meta: string;
   };
-  readonly numberOfImages: string;
+  readonly numberOfImages: number;
 };
 
 processUtils.getInputData<InputData>().then(async (res) => {
@@ -191,16 +191,24 @@ processUtils.getInputData<InputData>().then(async (res) => {
   const scanRes = await scan(res.result.images);
 
   if (scanRes._tag === 'Success') {
-    await BPromise.each(_.range(Number(input.numberOfImages)), (index) => {
-      const failed = generateRandomImage(scanRes.result, input.policyId, {
-        image: path.resolve(input.output.image),
-        meta: path.resolve(input.output.meta),
-        name: String(index).padStart(4, '0'),
-      });
-      if (!failed) {
-        console.error('Failed to generate image');
+    await BPromise.each(
+      _.range(Number(input.numberOfImages)),
+      async (index) => {
+        const name = String(index).padStart(4, '0');
+        const failed = await generateRandomImage(
+          scanRes.result,
+          input.policyId,
+          {
+            image: path.resolve(path.join(input.output.images, `${name}.png`)),
+            meta: path.resolve(path.join(input.output.meta, `${name}.json`)),
+            name,
+          }
+        );
+        if (!failed) {
+          console.error('Failed to generate image');
+        }
       }
-    });
+    );
   }
 
   return null;

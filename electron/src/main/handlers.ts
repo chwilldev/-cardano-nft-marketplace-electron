@@ -1,11 +1,14 @@
 import { M, R } from '../shared/events';
-import { scan } from '../../../scripts/generate-random-image';
+import { runScript } from '../shared/process';
 
+// eslint-disable-next-line import/prefer-default-export
 export const registerIpcEventHandlers = () => {
-  console.log('register');
-  M.scanImages.register(async (event, { directory }) => {
-    const result = await scan(directory);
+  M.generateRandomImages.register(async (event, inputData) => {
+    const code = await runScript<typeof inputData>(
+      'generate-random-image',
+      inputData
+    );
 
-    R.scannedImages.reply(event, { layers: result.result });
+    R.generatedRandomImages.reply(event, { success: code === 0 });
   });
 };

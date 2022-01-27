@@ -1,7 +1,5 @@
 import { ipcMain, ipcRenderer, IpcMainEvent, IpcRendererEvent } from 'electron';
 
-import { Layer } from '../../../scripts/generate-random-image';
-
 function createREvent<EventData>(channel: string) {
   const register = (
     handler: (event: IpcRendererEvent, data: EventData) => void
@@ -33,18 +31,25 @@ function createMEvent<EventData>(channel: string) {
 
   return Object.freeze({
     type: channel,
-    register: register,
+    register,
     send,
   });
 }
 
 export const R = Object.freeze({
-  scannedImages: createREvent<{ layers: readonly Layer[] }>('scannedImages'),
+  generatedRandomImages: createREvent<{
+    success: boolean;
+  }>('generatedRandomImages'),
 });
 
 export const M = Object.freeze({
-  scanImages: createMEvent<{
-    directory: string;
-  }>('scanImages'),
-  
+  generateRandomImages: createMEvent<{
+    images: string;
+    policyId: string;
+    output: {
+      images: string;
+      meta: string;
+    };
+    numberOfImages: number;
+  }>('generateRandomImages'),
 });

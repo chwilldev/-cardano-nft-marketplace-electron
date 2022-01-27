@@ -1,38 +1,43 @@
 import { useState } from 'react';
-import DirectoryInput from 'renderer/components/DirectoryInput';
-import Spinner from 'renderer/components/Spinner';
-import {
-  Layer,
-} from '../../../../scripts/generate-random-image';
+import { InputGroup, FormControl, Button } from 'react-bootstrap';
+
+import DirectoryInput from '../components/DirectoryInput';
+import Spinner from '../components/Spinner';
+import { randomHex } from '../../shared/crypto';
 import { R, M } from '../../shared/events';
 
-type Props = {};
-
-export default function GenerateRandomImage({}: Props) {
-  const [inputDirectory, setInputDirectory] = useState('');
-  const [outputDirectory, setOutputDirectory] = useState('');
-  const [policyId, setPolicyId] = useState('');
-  const [scanning, setScanning] = useState(false);
-  const [layers, setLayers] = useState<readonly Layer[]>([]);
+export default function GenerateRandomImage() {
+  const [inputDirectory, setInputDirectory] = useState('E:\\temp\\input');
+  const [outputDirectory, setOutputDirectory] = useState('E:\\temp\\output');
+  const [policyId, setPolicyId] = useState(randomHex(52));
+  const [numberOfImages, setNumberOfImages] = useState('0');
+  const [loading, setLoading] = useState(false);
 
   const handleInputDirectoryChange = async (value: string) => {
     setInputDirectory(value);
-    setScanning(true);
+  };
 
-    M.scanImages.send({ directory: value });
-    R.scannedImages.register((_event, { layers }) => {
-      setScanning(false);
-      setLayers(layers);
-      console.log({ layers });
+  const handleClickPreview = async () => {
+    M.generateRandomImages.send({
+      images: inputDirectory,
+      policyId,
+      output: {
+        meta: outputDirectory,
+        images: outputDirectory,
+      },
+      numberOfImages: 1,
     });
-    // const scanResult = await scan(value);
-    // setLayers(scanResult.result);
-    // setScanning(false);
+    setLoading(true);
+
+    R.generatedRandomImages.register((_event, { success }) => {
+      setLoading(false);
+      console.log({ success });
+    });
   };
 
   return (
     <div className="container-fluid position-relative">
-      {scanning && <Spinner />}
+      {loading && <Spinner />}
       <h1>Generate Random Image</h1>
       <form>
         <div className="row">
@@ -47,13 +52,16 @@ export default function GenerateRandomImage({}: Props) {
             </div>
             <div className="mb-2">
               <label>Policy Id</label>
-              <input
-                type="text"
-                className="form-control"
-                name="policyId"
-                value={policyId}
-                onChange={(e) => setPolicyId(e.target.value)}
-              />
+              <InputGroup>
+                <Button onClick={() => setPolicyId(randomHex(56))}>
+                  Random
+                </Button>
+                <FormControl
+                  placeholder="policyId"
+                  value={policyId}
+                  onChange={(e) => setPolicyId(e.target.value)}
+                />
+              </InputGroup>
             </div>
           </div>
           <div className="col-md-6">
@@ -63,6 +71,8 @@ export default function GenerateRandomImage({}: Props) {
                 type="number"
                 className="form-control"
                 name="numberOfImages"
+                value={numberOfImages}
+                onChange={(e) => setNumberOfImages(e.target.value)}
               />
             </div>
             <div className="mb-2">
@@ -75,8 +85,17 @@ export default function GenerateRandomImage({}: Props) {
             </div>
           </div>
         </div>
-        <div>
-          <button className="btn btn-primary">Generate</button>
+        <div className="d-flex">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleClickPreview}
+          >
+            Preview
+          </button>
+          <button type="button" className="btn btn-primary ms-auto">
+            Generate
+          </button>
         </div>
       </form>
     </div>
