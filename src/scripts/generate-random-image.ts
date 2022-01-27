@@ -3,25 +3,26 @@ import path from 'path';
 
 import { createCanvas, loadImage } from 'canvas';
 import Frame from 'canvas-to-buffer';
-import { CIP25 } from 'types/cardano';
-import { AsyncResult, AsyncSuccess } from 'types/standard';
-import { selectByRarity } from 'utils/crypto';
-import * as pathUtils from 'utils/path';
+
+import { CIP25 } from '../types/cardano';
+import { AsyncResult, AsyncSuccess } from '../types/standard';
+import { selectByRarity } from '../utils/crypto';
+import * as pathUtils from '../utils/path';
 
 const inputPath = path.resolve('/temp/input');
 
-type Attribute = {
+export type Attribute = {
   readonly rarity: number;
   readonly name: string;
   readonly imagePath: string;
 };
 
-type Layer = {
+export type Layer = {
   readonly attributeTypeName: string;
   readonly attributes: readonly Attribute[];
 };
 
-type ScanLayerError = {
+export type ScanLayerError = {
   readonly errorCode: 'InvalidDir' | 'ReadError';
 };
 
