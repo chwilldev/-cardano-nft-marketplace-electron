@@ -36,8 +36,3 @@ export async function getInputData<T>(): Promise<
     };
   }
 }
-[
-  'E:\\Projects\\cardano-nft-marketplace\\core\\build\\main\\scripts\\generate-random-image',
-  '--input',
-  'E:\\temp\\inputs\\2022-01-27-07-31-44-generate-random-image.json'
-]

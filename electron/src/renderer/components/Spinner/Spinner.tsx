@@ -1,6 +1,10 @@
-type Props = {};
+import React from 'react';
 
-export default function Spinner({}: Props) {
+type Props = {
+  controls?: React.ReactNode;
+};
+
+export default function Spinner({ controls }: Props) {
   return (
     <div
       className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center"
@@ -9,7 +13,16 @@ export default function Spinner({}: Props) {
         zIndex: 1000,
       }}
     >
-      <div className="spinner-border" role="status"></div>
+      <div>
+        <div className="d-flex justify-content-center mb-2">
+          <div className="spinner-border" role="status" />
+        </div>
+        {controls && <div className="d-flex">{controls}</div>}
+      </div>
     </div>
   );
 }
+
+Spinner.defaultProps = {
+  controls: null,
+};

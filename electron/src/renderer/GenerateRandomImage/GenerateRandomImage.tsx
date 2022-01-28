@@ -27,11 +27,14 @@ export default function GenerateRandomImage() {
   const [outputDirectory, setOutputDirectory] = useState('');
   const [policyId, setPolicyId] = useState(randomHex(52));
   const [numberOfImages, setNumberOfImages] = useState(10);
-  const [loading, setLoading] = useState(false);
+  const [scriptState, setScriptState] = useState<
+    'stopped' | 'running' | 'paused'
+  >('stopped');
   const [previewGenerating, setPreviewGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImgSrc, setPreviewImgSrc] = useState('');
   const [previewMetaJson, setPreviewMetaJson] = useState('');
+  const [currentPid, setCurrentPid] = useState<number | null>(null);
 
   const handleInputDirectoryChange = async (value: string) => {
     setInputDirectory(value);
@@ -45,7 +48,7 @@ export default function GenerateRandomImage() {
   useEffect(() => {
     return R.generatedRandomImages.register((_event, { success }) => {
       if (!success) {
-        setLoading(false);
+        setScriptState('stopped');
         setPreviewGenerating(false);
         toast.error(
           'Error ocurred while generating a random image. The input might be invalid.'
@@ -67,7 +70,7 @@ export default function GenerateRandomImage() {
             setPreviewImgSrc(
               `data:image/png;base64,${image.toString('base64')}`
             );
-            setLoading(false);
+            setScriptState('stopped');
             setPreviewGenerating(false);
             setPreviewOpen(true);
             return true;
@@ -76,13 +79,39 @@ export default function GenerateRandomImage() {
             toast.error('Cannot read meta file');
           });
       } else {
-        setLoading(false);
+        setScriptState('stopped');
         toast.success(
           `Generated ${numberOfImages} images into ${outputDirectory}`
         );
       }
     });
   }, [outputDirectory, numberOfImages, previewGenerating]);
+
+  useEffect(() => {
+    return R.scriptStarted.register((_event, { pid: process }) => {
+      setCurrentPid(process);
+    });
+  }, []);
+
+  useEffect(() => {
+    return R.scriptSuspended.register((_event, { result }) => {
+      if (result) {
+        setScriptState('paused');
+      } else {
+        toast.error('Suspend failed!');
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    return R.scriptResumed.register((_event, { result }) => {
+      if (result) {
+        setScriptState('running');
+      } else {
+        toast.error('Resume failed!');
+      }
+    });
+  }, []);
 
   const handleClickPreview = async () => {
     M.generateRandomImages.send({
@@ -95,7 +124,7 @@ export default function GenerateRandomImage() {
       numberOfImages: 1,
     });
     setPreviewGenerating(true);
-    setLoading(true);
+    setScriptState('running');
   };
 
   const handleClickGenerate = () => {
@@ -108,12 +137,47 @@ export default function GenerateRandomImage() {
       },
       numberOfImages,
     });
-    setLoading(true);
+    setScriptState('running');
+  };
+
+  const handleClickResume = () => {
+    if (!currentPid) {
+      toast.error('No script running');
+      return;
+    }
+
+    M.resumeScript.send({ pid: currentPid });
+  };
+
+  const handleClickPause = () => {
+    if (!currentPid) {
+      toast.error('No script running');
+      return;
+    }
+
+    M.suspendScript.send({ pid: currentPid });
   };
 
   return (
     <div className="container-fluid position-relative">
-      {loading && <Spinner />}
+      {scriptState !== 'stopped' && (
+        <Spinner
+          controls={
+            <div>
+              {scriptState === 'running' && (
+                <Button variant="danger" onClick={handleClickPause}>
+                  Pause
+                </Button>
+              )}
+              {scriptState === 'paused' && (
+                <Button variant="success" onClick={handleClickResume}>
+                  Resume
+                </Button>
+              )}
+            </div>
+          }
+        />
+      )}
       <h1>Generate Random Image</h1>
       <form>
         <div className="row">

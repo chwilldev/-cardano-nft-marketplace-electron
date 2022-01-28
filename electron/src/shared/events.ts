@@ -1,6 +1,7 @@
 import { ipcMain, ipcRenderer, IpcMainEvent, IpcRendererEvent } from 'electron';
 
 import environment from './environment';
+import { ScriptName } from './types';
 
 function createREvent<EventData>(channel: string) {
   const register = (
@@ -46,6 +47,22 @@ export const R = Object.freeze({
   generatedRandomImages: createREvent<{
     success: boolean;
   }>('generatedRandomImages'),
+
+  scriptStarted: createREvent<{
+    script: ScriptName;
+    pid: number;
+  }>('scriptStarted'),
+
+  scriptSuspended: createREvent<{
+    pid: number;
+    result: boolean;
+  }>('scriptSuspended'),
+
+  scriptResumed: createREvent<{
+    pid: number;
+    result: boolean;
+  }>('scriptResumed'),
+
   sendEnv: createREvent<typeof environment>('sendEnv'),
 });
 
@@ -59,5 +76,10 @@ export const M = Object.freeze({
     };
     numberOfImages: number;
   }>('generateRandomImages'),
+
+  suspendScript: createMEvent<{ pid: number }>('suspendScript'),
+
+  resumeScript: createMEvent<{ pid: number }>('resumeScript'),
+
   requestEnv: createMEvent<void>('requestEnv'),
 });
