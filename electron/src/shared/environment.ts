@@ -1,7 +1,8 @@
+import path from 'path';
+
 const environment = {
-  scriptsRoot:
-    'E:\\Projects\\cardano-nft-marketplace\\core\\build\\main\\scripts',
-  storagePath: 'E:\\temp\\inputs',
+  scriptsRoot: path.resolve('../core/build/main/scripts'),
+  storagePath: path.resolve('./storage/'),
 };
 
 export default environment;

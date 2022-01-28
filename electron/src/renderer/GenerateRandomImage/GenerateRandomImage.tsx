@@ -1,6 +1,6 @@
 import path from 'path';
 import { promises as fsp } from 'fs';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   InputGroup,
   FormControl,
@@ -18,12 +18,15 @@ import DirectoryInput from '../components/DirectoryInput';
 import Spinner from '../components/Spinner';
 import { randomHex } from '../../shared/crypto';
 import { R, M } from '../../shared/events';
+import { EnvironmentContext } from '../contexts';
 
 export default function GenerateRandomImage() {
-  const [inputDirectory, setInputDirectory] = useState('E:\\temp\\input');
-  const [outputDirectory, setOutputDirectory] = useState('E:\\temp\\output');
+  const env = useContext(EnvironmentContext);
+
+  const [inputDirectory, setInputDirectory] = useState('');
+  const [outputDirectory, setOutputDirectory] = useState('');
   const [policyId, setPolicyId] = useState(randomHex(52));
-  const [numberOfImages, setNumberOfImages] = useState(0);
+  const [numberOfImages, setNumberOfImages] = useState(10);
   const [loading, setLoading] = useState(false);
   const [previewGenerating, setPreviewGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -33,6 +36,11 @@ export default function GenerateRandomImage() {
   const handleInputDirectoryChange = async (value: string) => {
     setInputDirectory(value);
   };
+
+  useEffect(() => {
+    setInputDirectory(path.join(env.storagePath, 'images'));
+    setOutputDirectory(path.join(env.storagePath, 'output'));
+  }, [env]);
 
   useEffect(() => {
     return R.generatedRandomImages.register((_event, { success }) => {

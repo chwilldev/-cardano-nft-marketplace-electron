@@ -1,5 +1,7 @@
 import { ipcMain, ipcRenderer, IpcMainEvent, IpcRendererEvent } from 'electron';
 
+import environment from './environment';
+
 function createREvent<EventData>(channel: string) {
   const register = (
     handler: (event: IpcRendererEvent, data: EventData) => void
@@ -44,6 +46,7 @@ export const R = Object.freeze({
   generatedRandomImages: createREvent<{
     success: boolean;
   }>('generatedRandomImages'),
+  sendEnv: createREvent<typeof environment>('sendEnv'),
 });
 
 export const M = Object.freeze({
@@ -56,4 +59,5 @@ export const M = Object.freeze({
     };
     numberOfImages: number;
   }>('generateRandomImages'),
+  requestEnv: createMEvent<void>('requestEnv'),
 });

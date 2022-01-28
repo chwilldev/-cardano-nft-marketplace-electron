@@ -14,6 +14,7 @@ export async function runScript<InputData>(
   const scriptPath = path.join(environment.scriptsRoot, name);
   const inputPath = path.join(
     environment.storagePath,
+    'inputs',
     `${currentTime()}-${name}.json`
   );
   await fsp.writeFile(inputPath, JSON.stringify(inputData, null, 2), {
@@ -22,7 +23,6 @@ export async function runScript<InputData>(
 
   const args = [scriptPath, '--input', inputPath];
   const process = child.spawn('node', args);
-  console.log(`Execute Script: ${name} ${args.join(' ')}`);
 
   return new Promise((resolve, reject) => {
     process.on('close', (code) => {
