@@ -4,7 +4,7 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 
 import Dashboard from './Dashboard';
-import GenerateRandomImage from './GenerateRandomImage';
+import GenerateRandomImage from './containers/GenerateRandomImage';
 import { EnvironmentContext } from './contexts';
 
 import { M, R } from '../shared/events';

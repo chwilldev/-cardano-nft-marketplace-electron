@@ -14,11 +14,11 @@ import { toast } from 'react-toastify';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import DirectoryInput from '../components/DirectoryInput';
-import Spinner from '../components/Spinner';
-import { randomHex } from '../../shared/crypto';
-import { R, M } from '../../shared/events';
-import { EnvironmentContext } from '../contexts';
+import DirectoryInput from '../../components/DirectoryInput';
+import Spinner from '../../components/Spinner';
+import { randomHex } from '../../../shared/crypto';
+import { R, M } from '../../../shared/events';
+import { EnvironmentContext } from '../../contexts';
 
 export default function GenerateRandomImage() {
   const env = useContext(EnvironmentContext);
