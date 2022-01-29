@@ -15,26 +15,22 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import DirectoryInput from '../../components/DirectoryInput';
-import Spinner from '../../components/Spinner';
 import { randomHex } from '../../../shared/crypto';
-import { R, M } from '../../../shared/events';
-import { EnvironmentContext } from '../../contexts';
+import { R } from '../../../shared/events';
+import { EnvironmentContext, ScriptServiceContext } from '../../contexts';
 
 export default function GenerateRandomImage() {
   const env = useContext(EnvironmentContext);
+  const { startScript } = useContext(ScriptServiceContext);
 
   const [inputDirectory, setInputDirectory] = useState('');
   const [outputDirectory, setOutputDirectory] = useState('');
   const [policyId, setPolicyId] = useState(randomHex(52));
   const [numberOfImages, setNumberOfImages] = useState(10);
-  const [scriptState, setScriptState] = useState<
-    'stopped' | 'running' | 'paused'
-  >('stopped');
   const [previewGenerating, setPreviewGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImgSrc, setPreviewImgSrc] = useState('');
   const [previewMetaJson, setPreviewMetaJson] = useState('');
-  const [currentPid, setCurrentPid] = useState<number | null>(null);
 
   const handleInputDirectoryChange = async (value: string) => {
     setInputDirectory(value);
@@ -46,9 +42,12 @@ export default function GenerateRandomImage() {
   }, [env]);
 
   useEffect(() => {
-    return R.generatedRandomImages.register((_event, { success }) => {
-      if (!success) {
-        setScriptState('stopped');
+    return R.scriptClosed.register((_event, { code, script }) => {
+      if (script !== 'generate-random-image') {
+        return;
+      }
+
+      if (code !== 0) {
         setPreviewGenerating(false);
         toast.error(
           'Error ocurred while generating a random image. The input might be invalid.'
@@ -70,7 +69,6 @@ export default function GenerateRandomImage() {
             setPreviewImgSrc(
               `data:image/png;base64,${image.toString('base64')}`
             );
-            setScriptState('stopped');
             setPreviewGenerating(false);
             setPreviewOpen(true);
             return true;
@@ -79,7 +77,6 @@ export default function GenerateRandomImage() {
             toast.error('Cannot read meta file');
           });
       } else {
-        setScriptState('stopped');
         toast.success(
           `Generated ${numberOfImages} images into ${outputDirectory}`
         );
@@ -87,97 +84,40 @@ export default function GenerateRandomImage() {
     });
   }, [outputDirectory, numberOfImages, previewGenerating]);
 
-  useEffect(() => {
-    return R.scriptStarted.register((_event, { pid: process }) => {
-      setCurrentPid(process);
-    });
-  }, []);
-
-  useEffect(() => {
-    return R.scriptSuspended.register((_event, { result }) => {
-      if (result) {
-        setScriptState('paused');
-      } else {
-        toast.error('Suspend failed!');
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    return R.scriptResumed.register((_event, { result }) => {
-      if (result) {
-        setScriptState('running');
-      } else {
-        toast.error('Resume failed!');
-      }
-    });
-  }, []);
-
   const handleClickPreview = async () => {
-    M.generateRandomImages.send({
-      images: inputDirectory,
-      policyId,
-      output: {
-        meta: outputDirectory,
-        images: outputDirectory,
+    startScript({
+      script: 'generate-random-image',
+      inputData: {
+        images: inputDirectory,
+        policyId,
+        output: {
+          meta: outputDirectory,
+          images: outputDirectory,
+        },
+        numberOfImages: 1,
       },
-      numberOfImages: 1,
     });
+
     setPreviewGenerating(true);
-    setScriptState('running');
   };
 
   const handleClickGenerate = () => {
-    M.generateRandomImages.send({
-      images: inputDirectory,
-      policyId,
-      output: {
-        meta: outputDirectory,
-        images: outputDirectory,
+    startScript({
+      script: 'generate-random-image',
+      inputData: {
+        images: inputDirectory,
+        policyId,
+        output: {
+          meta: outputDirectory,
+          images: outputDirectory,
+        },
+        numberOfImages,
       },
-      numberOfImages,
     });
-    setScriptState('running');
-  };
-
-  const handleClickResume = () => {
-    if (!currentPid) {
-      toast.error('No script running');
-      return;
-    }
-
-    M.resumeScript.send({ pid: currentPid });
-  };
-
-  const handleClickPause = () => {
-    if (!currentPid) {
-      toast.error('No script running');
-      return;
-    }
-
-    M.suspendScript.send({ pid: currentPid });
   };
 
   return (
-    <div className="container-fluid position-relative">
-      {scriptState !== 'stopped' && (
-        <Spinner
-          controls={
-            <div>
-              {scriptState === 'running' && (
-                <Button variant="danger" onClick={handleClickPause}>
-                  Pause
-                </Button>
-              )}
-              {scriptState === 'paused' && (
-                <Button variant="success" onClick={handleClickResume}>
-                  Resume
-                </Button>
-              )}
-            </div>
-          }
-        />
-      )}
+    <div className="container-fluid position-relative pt-3">
       <h1>Generate Random Image</h1>
       <form>
         <div className="row">

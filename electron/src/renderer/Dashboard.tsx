@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom';
 
-type Props = {};
-
-export default function Dashboard({}: Props) {
+export default function Dashboard() {
   return (
     <div className="container-fluid">
       <Link className="btn-link" to="/generate-random-image">

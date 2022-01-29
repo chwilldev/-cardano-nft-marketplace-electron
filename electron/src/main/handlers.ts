@@ -4,19 +4,15 @@ import environment from '../shared/environment';
 
 // eslint-disable-next-line import/prefer-default-export
 export const registerIpcEventHandlers = () => {
-  M.generateRandomImages.register(async (event, inputData) => {
-    const code = await runScript<typeof inputData>(
-      'generate-random-image',
-      inputData,
-      ({ process }) => {
-        R.scriptStarted.reply(event, {
-          script: 'generate-random-image',
-          pid: process,
-        });
-      }
-    );
+  M.startScript.register(async (event, { script, inputData }) => {
+    const { code, pid } = await runScript(script, inputData, ({ process }) => {
+      R.scriptStarted.reply(event, {
+        script,
+        pid: process,
+      });
+    });
 
-    R.generatedRandomImages.reply(event, { success: code === 0 });
+    R.scriptClosed.reply(event, { pid, script: 'generate-random-image', code });
   });
 
   M.requestEnv.register(async (event) => {

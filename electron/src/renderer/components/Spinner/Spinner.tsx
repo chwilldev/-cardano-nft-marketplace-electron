@@ -11,6 +11,7 @@ export default function Spinner({ controls }: Props) {
       style={{
         backgroundColor: 'rgb(0, 0, 0, 0.2)',
         zIndex: 1000,
+        top: 0,
       }}
     >
       <div>

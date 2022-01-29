@@ -7,15 +7,17 @@ import { resume as ntResume, suspend as ntSuspend } from 'ntsuspend';
 import { currentTime } from './date';
 
 import environment from './environment';
+import { ScriptName } from './types';
 
 const defaultCallback = () => {};
 
 // eslint-disable-next-line import/prefer-default-export
-export async function runScript<InputData>(
-  name: 'generate-random-image',
-  inputData: InputData,
+export async function runScript(
+  name: ScriptName,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inputData: Record<string, any>,
   startedCallback: (arg: { process: number }) => void = defaultCallback
-): Promise<number> {
+): Promise<{ code: number; pid: number }> {
   const scriptPath = path.join(environment.scriptsRoot, name);
   const inputPath = path.join(
     environment.storagePath,
@@ -35,11 +37,11 @@ export async function runScript<InputData>(
 
   return new Promise((resolve, reject) => {
     process.on('close', (code) => {
-      if (code === null) {
+      if (code === null || !process.pid) {
         return reject();
       }
 
-      return resolve(code);
+      return resolve({ code, pid: process.pid });
     });
   });
 }
