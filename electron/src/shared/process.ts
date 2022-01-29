@@ -31,6 +31,9 @@ export async function runScript(
   const args = [scriptPath, '--input', inputPath];
   const process = child.spawn('node', args);
 
+  // eslint-disable-next-line no-console
+  console.log(`Run script: ${args.join(' ')}`);
+
   if (process.pid) {
     startedCallback({ process: process.pid });
   }

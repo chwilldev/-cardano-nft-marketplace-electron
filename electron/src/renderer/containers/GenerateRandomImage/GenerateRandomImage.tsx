@@ -1,31 +1,24 @@
 import path from 'path';
 import { promises as fsp } from 'fs';
 import { useContext, useEffect, useState } from 'react';
-import {
-  InputGroup,
-  FormControl,
-  Button,
-  Modal,
-  Row,
-  Col,
-  Form,
-} from 'react-bootstrap';
+import { Button, Modal, Row, Col, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import DirectoryInput from '../../components/DirectoryInput';
-import { randomHex } from '../../../shared/crypto';
-import { R } from '../../../shared/events';
-import { EnvironmentContext, ScriptServiceContext } from '../../contexts';
+import PolicyIdInput from '../../components/PolicyIdInput';
+import { randomPolicyId } from '../../../shared/crypto';
+import { EnvironmentContext } from '../../contexts';
+import { useScriptService } from '../../utils/hooks';
 
 export default function GenerateRandomImage() {
   const env = useContext(EnvironmentContext);
-  const { startScript } = useContext(ScriptServiceContext);
+  const { startScript, registerScriptClosed } = useScriptService();
 
   const [inputDirectory, setInputDirectory] = useState('');
   const [outputDirectory, setOutputDirectory] = useState('');
-  const [policyId, setPolicyId] = useState(randomHex(52));
+  const [policyId, setPolicyId] = useState(randomPolicyId());
   const [numberOfImages, setNumberOfImages] = useState(10);
   const [previewGenerating, setPreviewGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -42,7 +35,7 @@ export default function GenerateRandomImage() {
   }, [env]);
 
   useEffect(() => {
-    return R.scriptClosed.register((_event, { code, script }) => {
+    return registerScriptClosed((_event, { code, script }) => {
       if (script !== 'generate-random-image') {
         return;
       }
@@ -82,7 +75,12 @@ export default function GenerateRandomImage() {
         );
       }
     });
-  }, [outputDirectory, numberOfImages, previewGenerating]);
+  }, [
+    outputDirectory,
+    numberOfImages,
+    previewGenerating,
+    registerScriptClosed,
+  ]);
 
   const handleClickPreview = async () => {
     startScript({
@@ -132,16 +130,7 @@ export default function GenerateRandomImage() {
             </div>
             <div className="mb-2">
               <Form.Label>Policy Id</Form.Label>
-              <InputGroup>
-                <Button onClick={() => setPolicyId(randomHex(56))}>
-                  Random
-                </Button>
-                <FormControl
-                  placeholder="policyId"
-                  value={policyId}
-                  onChange={(e) => setPolicyId(e.target.value)}
-                />
-              </InputGroup>
+              <PolicyIdInput value={policyId} onChange={setPolicyId} />
             </div>
           </div>
           <div className="col-md-6">

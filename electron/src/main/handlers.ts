@@ -12,7 +12,7 @@ export const registerIpcEventHandlers = () => {
       });
     });
 
-    R.scriptClosed.reply(event, { pid, script: 'generate-random-image', code });
+    R.scriptClosed.reply(event, { pid, script, code });
   });
 
   M.requestEnv.register(async (event) => {

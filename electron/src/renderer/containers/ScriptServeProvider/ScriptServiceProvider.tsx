@@ -1,8 +1,9 @@
+import { IpcRendererEvent } from 'electron';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { ScriptServiceContext } from '../../contexts';
-import { R, M } from '../../../shared/events';
+import { R, M, ScriptClosedEventData } from '../../../shared/events';
 import { ScriptName } from '../../../shared/types';
 
 type Props = {
@@ -85,6 +86,13 @@ export default function ScriptServiceProvider(props: Props) {
     [status]
   );
 
+  const registerScriptClosed = useCallback(
+    (fn: (_event: IpcRendererEvent, data: ScriptClosedEventData) => void) => {
+      return R.scriptClosed.register(fn);
+    },
+    []
+  );
+
   const contextValue = useMemo(() => {
     return {
       status,
@@ -94,6 +102,7 @@ export default function ScriptServiceProvider(props: Props) {
       startScript,
       suspendScript,
       resumeScript,
+      registerScriptClosed,
     };
   }, [
     status,
@@ -103,6 +112,7 @@ export default function ScriptServiceProvider(props: Props) {
     startScript,
     suspendScript,
     resumeScript,
+    registerScriptClosed,
   ]);
 
   return (

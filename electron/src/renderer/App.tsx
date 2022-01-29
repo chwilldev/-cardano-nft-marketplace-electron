@@ -4,7 +4,10 @@ import { ToastContainer } from 'react-toastify';
 
 import Dashboard from './Dashboard';
 import GenerateRandomImage from './containers/GenerateRandomImage';
+import GenerateRoyaltiesMeta from './containers/GenerateRoyaltiesMeta';
 import { EnvironmentContext } from './contexts';
+import Layout from './containers/Layout';
+import ScriptServiceProvider from './containers/ScriptServeProvider';
 
 import { M, R } from '../shared/events';
 import Env from '../shared/environment';
@@ -12,8 +15,6 @@ import Env from '../shared/environment';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Layout from './containers/Layout/Layout';
-import ScriptServiceProvider from './containers/ScriptServeProvider';
 
 export default function App() {
   const [environment, setEnvironment] = useState<typeof Env>({
@@ -53,6 +54,10 @@ export default function App() {
               <Route
                 path="/generate-random-image"
                 element={<GenerateRandomImage />}
+              />
+              <Route
+                path="/generate-royalties-meta"
+                element={<GenerateRoyaltiesMeta />}
               />
             </Routes>
           </Layout>
