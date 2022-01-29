@@ -21,3 +21,13 @@ export type CIP25 = {
     };
   };
 };
+
+export type CIP27 = {
+  readonly '777': {
+    readonly [policyId: string]: {
+      readonly rate: number;
+
+      readonly addr: string | string[];
+    };
+  };
+};
