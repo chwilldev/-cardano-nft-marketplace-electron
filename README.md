@@ -9,6 +9,10 @@
 - electron
 
   This directory contains the electron app with simple UI to test scripts
+  
+## Requirements
+
+- Node.js v16.13.1
 
 ## Technology stack
 
