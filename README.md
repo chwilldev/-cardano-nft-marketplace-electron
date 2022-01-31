@@ -4,11 +4,15 @@
 
 - core
 
-This directory contains core scripts for minting.
+  This directory contains core scripts for minting.
 
 - electron
 
-This directory contains the electron app with simple UI to test scripts
+  This directory contains the electron app with simple UI to test scripts
+  
+## Requirements
+
+- Node.js v16.13.1
 
 ## Technology stack
 
