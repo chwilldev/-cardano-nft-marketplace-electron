@@ -10,13 +10,11 @@ type InputData = {
   output: string;
 };
 
-async function main({ policyId, rate, addr, output }: InputData) {
+async function main({ rate, addr, output }: InputData) {
   const meta: CIP27 = {
     '777': {
-      [policyId]: {
-        rate,
-        addr,
-      },
+      rate,
+      addr,
     },
   };
 
