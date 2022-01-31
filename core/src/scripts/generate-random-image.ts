@@ -136,7 +136,7 @@ export async function mergeImages(images: readonly string[], output: string) {
 
 export async function generateRandomImage(
   layers: readonly Layer[],
-  policyId: string,
+  { policyId, policyName }: { policyId: string; policyName: string },
   output: {
     readonly name: string;
     readonly image: string;
@@ -150,15 +150,17 @@ export async function generateRandomImage(
   const meta: CIP25 = {
     721: {
       [policyId]: {
-        name: output.name,
-        image: output.image,
-        mediaType: 'image/png',
-        ...Object.fromEntries(
-          attributes.map((attr, index) => [
-            layers[index].attributeTypeName,
-            attr.name,
-          ])
-        ),
+        [policyName]: {
+          name: output.name,
+          image: output.image,
+          mediaType: 'image/png',
+          ...Object.fromEntries(
+            attributes.map((attr, index) => [
+              layers[index].attributeTypeName,
+              attr.name,
+            ])
+          ),
+        },
       },
     },
   };
@@ -174,6 +176,7 @@ export async function generateRandomImage(
 export type InputData = {
   readonly images: string;
   readonly policyId: string;
+  readonly policyName: string;
   readonly output: {
     readonly images: string;
     readonly meta: string;
@@ -197,7 +200,7 @@ processUtils.getInputData<InputData>().then(async (res) => {
         const name = String(index).padStart(4, '0');
         const failed = await generateRandomImage(
           scanRes.result,
-          input.policyId,
+          { policyId: input.policyId, policyName: input.policyName },
           {
             image: path.resolve(path.join(input.output.images, `${name}.png`)),
             meta: path.resolve(path.join(input.output.meta, `${name}.json`)),

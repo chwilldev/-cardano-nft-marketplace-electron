@@ -26,6 +26,7 @@ export default function GenerateRandomImage() {
   const [inputDirectory, setInputDirectory] = useState('');
   const [outputDirectory, setOutputDirectory] = useState('');
   const [policyId, setPolicyId] = useState(randomHex(52));
+  const [policyName, setPolicyName] = useState('');
   const [numberOfImages, setNumberOfImages] = useState(10);
   const [scriptState, setScriptState] = useState<
     'stopped' | 'running' | 'paused'
@@ -117,6 +118,7 @@ export default function GenerateRandomImage() {
     M.generateRandomImages.send({
       images: inputDirectory,
       policyId,
+      policyName,
       output: {
         meta: outputDirectory,
         images: outputDirectory,
@@ -131,6 +133,7 @@ export default function GenerateRandomImage() {
     M.generateRandomImages.send({
       images: inputDirectory,
       policyId,
+      policyName,
       output: {
         meta: outputDirectory,
         images: outputDirectory,
@@ -188,6 +191,15 @@ export default function GenerateRandomImage() {
                 name="inputDirectory"
                 value={inputDirectory}
                 onChange={handleInputDirectoryChange}
+              />
+            </div>
+            <div className="mb-2">
+              <Form.Label>Policy Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="policyName"
+                value={policyName}
+                onChange={(e) => setPolicyName(e.target.value)}
               />
             </div>
             <div className="mb-2">
