@@ -19,7 +19,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "allowJs": true,
-    "types": ["src/@types"],
+    "typeRoots": ["node_modules/@types"],
     "outDir": "release/app/dist"
   },
   "exclude": ["test", "release/build", "release/app/dist", ".erb/dll"]
