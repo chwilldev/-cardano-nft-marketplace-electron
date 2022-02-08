@@ -24,6 +24,10 @@ const configuration: webpack.Configuration = {
           },
         },
       },
+      {
+        test: /\.node$/,
+        loader: 'node-loader',
+      },
     ],
   },
 
@@ -42,8 +46,8 @@ const configuration: webpack.Configuration = {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
     modules: [webpackPaths.srcPath, 'node_modules'],
     fallback: {
-      "path": require.resolve("path-browserify")
-    }
+      path: require.resolve('path-browserify'),
+    },
   },
 
   plugins: [

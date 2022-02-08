@@ -2,7 +2,6 @@ import child from 'child_process';
 import path from 'path';
 import { promises as fsp } from 'fs';
 import os from 'os';
-import { resume as ntResume, suspend as ntSuspend } from 'ntsuspend';
 
 import { currentTime } from './date';
 
@@ -51,16 +50,18 @@ export function isWindows() {
   return platform === 'win32';
 }
 
+const ntsuspend = isWindows() ? require('ntsuspend') : null;
+
 export function suspend(pid: number): boolean {
   if (isWindows()) {
-    return ntSuspend(pid);
+    return ntsuspend.suspend(pid);
   }
   return process.kill(pid, 'SIGSTOP');
 }
 
 export function resume(pid: number): boolean {
   if (isWindows()) {
-    return ntResume(pid);
+    return ntsuspend.resume(pid);
   }
   return process.kill(pid, 'SIGCONT');
 }

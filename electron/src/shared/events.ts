@@ -72,6 +72,7 @@ export const M = Object.freeze({
   generateRandomImages: createMEvent<{
     images: string;
     policyId: string;
+    policyName: string;
     output: {
       images: string;
       meta: string;
