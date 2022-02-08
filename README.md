@@ -22,11 +22,15 @@
 - Electron
 - Cardano CLI
 
+## Notes
+
+If you're running on Windows, please `yarn global add ntsuspend` for OS compatibility.
+
 ## How to start the application in development mode
 
 1. `cd core && npm install` to install core package dependencies
 2. `npm run watch:build` to build the package in watch mode
-3. `cd ../electron && npm install` to install electron package dependencies
+3. `cd ../electron && yarn install` to install electron package dependencies
 4. `npm start` to start the electron application
 
 ## How to build the application for production
