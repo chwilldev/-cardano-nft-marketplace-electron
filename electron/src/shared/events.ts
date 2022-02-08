@@ -44,10 +44,6 @@ function createMEvent<EventData>(channel: string) {
 }
 
 export const R = Object.freeze({
-  generatedRandomImages: createREvent<{
-    success: boolean;
-  }>('generatedRandomImages'),
-
   scriptStarted: createREvent<{
     script: ScriptName;
     pid: number;
@@ -63,6 +59,12 @@ export const R = Object.freeze({
     result: boolean;
   }>('scriptResumed'),
 
+  scriptClosed: createREvent<{
+    pid: number;
+    script: ScriptName;
+    code: number;
+  }>('scriptClosed'),
+
   sendEnv: createREvent<typeof environment>('sendEnv'),
 });
 
@@ -77,6 +79,12 @@ export const M = Object.freeze({
     };
     numberOfImages: number;
   }>('generateRandomImages'),
+
+  startScript:
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createMEvent<{ script: ScriptName; inputData: Record<string, any> }>(
+      'startScript'
+    ),
 
   suspendScript: createMEvent<{ pid: number }>('suspendScript'),
 
