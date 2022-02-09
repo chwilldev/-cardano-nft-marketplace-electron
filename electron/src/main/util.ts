@@ -2,6 +2,8 @@
 import { URL } from 'url';
 import path from 'path';
 
+import { isWindows } from '../shared/process';
+
 export let resolveHtmlPath: (htmlFileName: string) => string;
 
 if (process.env.NODE_ENV === 'development') {
@@ -16,3 +18,20 @@ if (process.env.NODE_ENV === 'development') {
     return `file://${path.resolve(__dirname, '../renderer/', htmlFileName)}`;
   };
 }
+
+export function suspend(pid: number): boolean {
+  if (isWindows()) {
+    const ntsuspend = require('ntsuspend');
+    return ntsuspend.suspend(pid);
+  }
+  return process.kill(pid, 'SIGSTOP');
+}
+
+export function resume(pid: number): boolean {
+  if (isWindows()) {
+    const ntsuspend = require('ntsuspend');    
+    return ntsuspend.resume(pid);
+  }
+  return process.kill(pid, 'SIGCONT');
+}
+
