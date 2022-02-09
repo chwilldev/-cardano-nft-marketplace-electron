@@ -55,10 +55,6 @@ export default function App() {
                 path="/generate-random-image"
                 element={<GenerateRandomImage />}
               />
-              <Route
-                path="/generate-royalties-meta"
-                element={<GenerateRoyaltiesMeta />}
-              />
             </Routes>
           </Layout>
         </ScriptServiceProvider>

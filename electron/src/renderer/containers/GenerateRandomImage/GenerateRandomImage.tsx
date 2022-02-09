@@ -1,6 +1,6 @@
 import path from 'path';
 import { promises as fsp } from 'fs';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useCallback } from 'react';
 import { Button, Modal, Row, Col, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -21,10 +21,19 @@ export default function GenerateRandomImage() {
   const [policyId, setPolicyId] = useState(randomPolicyId());
   const [policyName, setPolicyName] = useState('');
   const [numberOfImages, setNumberOfImages] = useState(10);
+  const [rate, setRate] = useState<number>(10);
+  const [addr, setAddr] = useState<string>(
+    'addr1q8g3dv6ptkgsafh7k5muggrvfde2szzmc2mqkcxpxn7c63l9znc9e3xa82h, pf39scc37tcu9ggy0l89gy2f9r2lf7husfvu8wh'
+  );
+
   const [previewGenerating, setPreviewGenerating] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImgSrc, setPreviewImgSrc] = useState('');
   const [previewMetaJson, setPreviewMetaJson] = useState('');
+  const [royaltiesModalOpen, setRoyaltiesModalOpen] = useState(false);
+  const [royaltiesMetaJson, setRoyaltiesMetaJson] = useState<string>('');
+
+  const royaltiesMetaOutput = `${outputDirectory}/CIP-0027.json`;
 
   const handleInputDirectoryChange = async (value: string) => {
     setInputDirectory(value);
@@ -83,6 +92,18 @@ export default function GenerateRandomImage() {
     registerScriptClosed,
   ]);
 
+  useEffect(() => {
+    return registerScriptClosed(async (_event, { script }) => {
+      if (script !== 'generate-cip-0027-meta') {
+        return;
+      }
+
+      const buffer = await fsp.readFile(royaltiesMetaOutput, { encoding: 'utf8' });
+      setRoyaltiesMetaJson(JSON.stringify(JSON.parse(buffer), null, 2));
+      setRoyaltiesModalOpen(true);
+    });
+  }, [royaltiesMetaOutput, registerScriptClosed]);
+
   const handleClickPreview = async () => {
     startScript({
       script: 'generate-random-image',
@@ -100,6 +121,23 @@ export default function GenerateRandomImage() {
 
     setPreviewGenerating(true);
   };
+
+  const handleClickGenerateRoyaltiesMeta = useCallback(
+    () => {
+      const inputAddr = addr.split(',').map((item) => item.trim());
+
+      startScript({
+        script: 'generate-cip-0027-meta',
+        inputData: {
+          policyId,
+          rate: rate / 100,
+          addr: inputAddr.length === 0 ? inputAddr[0] : inputAddr,
+          output: path.join(outputDirectory, 'CIP-0027.json'),
+        },
+      });
+    },
+    [startScript, policyId, addr, rate, outputDirectory]
+  );
 
   const handleClickGenerate = () => {
     startScript({
@@ -165,6 +203,31 @@ export default function GenerateRandomImage() {
               />
             </div>
           </div>
+          <div className="mb-2">
+            <Form.Label>Rate</Form.Label>
+            <Form.Control
+              type="number"
+              name="rate"
+              value={rate}
+              onChange={(e) => setRate(Number(e.target.value))}
+            />
+            <Form.Text className="text-muted">
+              Please input royalty rate in percent. For example 32.21
+            </Form.Text>
+          </div>
+          <div className="mb-2">
+            <Form.Label>Address</Form.Label>
+            <Form.Control
+              type="text"
+              name="addr"
+              value={addr}
+              onChange={(e) => setAddr(e.target.value)}
+            />
+            <Form.Text className="text-muted">
+              Please input addresses separated by comma. For example
+              addr1q8g3dv6ptkgsafh7k5muggrvfde2szzmc2mqkcxpxn7c63l9znc9e3xa82h,&nbsp;pf39scc37tcu9ggy0l89gy2f9r2lf7husfvu8wh
+            </Form.Text>
+          </div>
         </div>
         <div className="d-flex">
           <button
@@ -177,9 +240,16 @@ export default function GenerateRandomImage() {
           <button
             type="button"
             className="btn btn-primary ms-auto"
+            onClick={handleClickGenerateRoyaltiesMeta}
+          >
+            Generate Royalties Meta
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary ms-auto"
             onClick={handleClickGenerate}
           >
-            Generate
+            Generate Images
           </button>
         </div>
       </form>
@@ -201,6 +271,21 @@ export default function GenerateRandomImage() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="light" onClick={() => setPreviewOpen(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={royaltiesModalOpen} onHide={() => setRoyaltiesModalOpen(false)} size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>777 Meta JSON</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <SyntaxHighlighter language="json" style={docco}>
+            {royaltiesMetaJson}
+          </SyntaxHighlighter>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="light" onClick={() => setRoyaltiesModalOpen(false)}>
             Close
           </Button>
         </Modal.Footer>

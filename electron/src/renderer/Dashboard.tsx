@@ -14,14 +14,6 @@ export default function Dashboard() {
         >
           Generate Random Image
         </ListGroupItem>
-        <ListGroupItem
-          action
-          variant="light"
-          to="/generate-royalties-meta"
-          as={Link}
-        >
-          Generate Royalties Meta
-        </ListGroupItem>
       </ListGroup>
     </div>
   );
