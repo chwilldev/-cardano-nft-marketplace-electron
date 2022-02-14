@@ -30,6 +30,9 @@ export async function runScript(
   const args = [scriptPath, '--input', inputPath];
   const process = child.spawn('node', args);
 
+  // eslint-disable-next-line no-console
+  console.log(`Run script: ${args.join(' ')}`);
+
   if (process.pid) {
     startedCallback({ process: process.pid });
   }
@@ -48,20 +51,4 @@ export async function runScript(
 export function isWindows() {
   const platform = os.platform();
   return platform === 'win32';
-}
-
-const ntsuspend = isWindows() ? require('ntsuspend') : null;
-
-export function suspend(pid: number): boolean {
-  if (isWindows()) {
-    return ntsuspend.suspend(pid);
-  }
-  return process.kill(pid, 'SIGSTOP');
-}
-
-export function resume(pid: number): boolean {
-  if (isWindows()) {
-    return ntsuspend.resume(pid);
-  }
-  return process.kill(pid, 'SIGCONT');
 }

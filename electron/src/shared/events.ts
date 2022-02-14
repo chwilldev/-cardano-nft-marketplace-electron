@@ -43,6 +43,12 @@ function createMEvent<EventData>(channel: string) {
   });
 }
 
+export type ScriptClosedEventData = {
+  pid: number;
+  script: ScriptName;
+  code: number;
+};
+
 export const R = Object.freeze({
   scriptStarted: createREvent<{
     script: ScriptName;
@@ -59,11 +65,7 @@ export const R = Object.freeze({
     result: boolean;
   }>('scriptResumed'),
 
-  scriptClosed: createREvent<{
-    pid: number;
-    script: ScriptName;
-    code: number;
-  }>('scriptClosed'),
+  scriptClosed: createREvent<ScriptClosedEventData>('scriptClosed'),
 
   sendEnv: createREvent<typeof environment>('sendEnv'),
 });
